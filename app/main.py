@@ -8,6 +8,7 @@
 from phoenix.otel import register
 from datetime import datetime
 from langchain_google_genai import ChatGoogleGenerativeAI
+from langchain_openai import ChatOpenAI
 from langgraph.prebuilt import create_react_agent
 from langchain_core.messages import AIMessageChunk
 from tools import get_all_tools
@@ -22,8 +23,10 @@ import time
 APP_NAME = "Tonibot"
 
 # Logging
+logging.basicConfig(level=logging.INFO, 
+                    format="[%(levelname)s] (%(asctime)s) %(name)s - %(message)s",
+                    datefmt="%Y-%m-%d %H:%M:%S")
 logger = logging.getLogger(__name__)
-logger.setLevel(logging.INFO)
 
 # Phoenix tracing
 def start_phoenix(phoenix_endpoint : str):
@@ -32,6 +35,7 @@ def start_phoenix(phoenix_endpoint : str):
     auto_instrument=True,
     endpoint=phoenix_endpoint,
     )
+    logging.getLogger("openinference").setLevel(logging.CRITICAL)
 
 # QA loop
 def qa_loop(agent):
@@ -69,26 +73,43 @@ def main():
         action="store_true",
         help="Enable debug logging"
     )
+    parser.add_argument(
+        "--log",
+        action="store_true",
+        help="Enable logging (critical level if off, info/debug if on)"
+    )
     args = parser.parse_args()
     
-    if args.debug:
+    # Set logging level based on arguments
+    if not args.log:
+        logging.getLogger().setLevel(logging.CRITICAL)
+    elif args.debug:
         logging.getLogger().setLevel(logging.DEBUG)
         logger.debug("Debug logging enabled")
+    else:
+        logging.getLogger().setLevel(logging.INFO)
     
     if args.phoenix_endpoint:
         start_phoenix(args.phoenix_endpoint)
     
+    """
     if not os.environ.get("GOOGLE_API_KEY"):
         os.environ["GOOGLE_API_KEY"] = getpass.getpass("Enter API key for Google Gemini: ")
 
     model = ChatGoogleGenerativeAI(model="gemini-2.0-flash")
+    """
+
+    if not os.environ.get("OPENAI_API_KEY"):
+        os.environ["OPENAI_API_KEY"] = getpass.getpass("Enter API key for OpenAI: ")
+
+    model = ChatOpenAI(model="gpt-4.1-mini-2025-04-14")
 
     # TODO switch to our custom agent, this is just to get an input-output loop going
     agent = create_react_agent(
         model=model,
         name=APP_NAME,
         prompt=f"You are a helpful football assistant. Today is {datetime.today().strftime('%Y-%m-%d')}. If the user query does not specify a season, assume it is 2024 for European leagues and 2025 for cups. If the user does not specify a league, assume it is the national league for the teams in the query. If any tool fails, figure out the correct parameters (e.g. for team name, 'FCP' should be 'FC Porto') and try again.",
-        tools=[],
+        tools=get_all_tools(),
     )
 
     # Run it
