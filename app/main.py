@@ -10,6 +10,7 @@ from datetime import datetime
 from langchain_google_genai import ChatGoogleGenerativeAI
 from langgraph.prebuilt import create_react_agent
 from langchain_core.messages import AIMessageChunk
+from tools import get_all_tools
 
 import getpass
 import os
@@ -82,7 +83,7 @@ def main():
         model=model,
         name=APP_NAME,
         prompt=f"You are a helpful football assistant. Today is {datetime.today().strftime('%Y-%m-%d')}. If the user query does not specify a season, assume it is 2024 for European leagues and 2025 for cups. If the user does not specify a league, assume it is the national league for the teams in the query. If any tool fails, figure out the correct parameters (e.g. for team name, 'FCP' should be 'FC Porto') and try again.",
-        tools=[],
+        tools=get_all_tools(),
     )
 
     # Run it
