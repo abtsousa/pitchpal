@@ -13,15 +13,20 @@ from langchain_core.messages import AIMessageChunk
 
 import getpass
 import os
+import logging
 import argparse
 
 # Global variables
 APP_NAME = "Tonibot"
 
+# Logging
+logging.basicConfig(level=logging.INFO)
+logger = logging.getLogger(__name__)
+
+# Phoenix tracing
 def start_phoenix(phoenix_endpoint : str):
-    # configure the Phoenix tracer
-    tracer_provider = register(
-    project_name="default",
+    register(
+    project_name=APP_NAME,
     auto_instrument=True,
     endpoint=phoenix_endpoint,
     )
@@ -53,7 +58,16 @@ def main():
         "--phoenix-endpoint", 
         help="Phoenix endpoint URL (optional)"
     )
+    parser.add_argument(
+        "--debug",
+        action="store_true",
+        help="Enable debug logging"
+    )
     args = parser.parse_args()
+    
+    if args.debug:
+        logging.getLogger().setLevel(logging.DEBUG)
+        logger.debug("Debug logging enabled")
     
     if args.phoenix_endpoint:
         start_phoenix(args.phoenix_endpoint)
