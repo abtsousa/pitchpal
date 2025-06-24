@@ -16,6 +16,7 @@ import getpass
 import os
 import logging
 import argparse
+import time
 
 # Global variables
 APP_NAME = "Tonibot"
@@ -41,6 +42,8 @@ def qa_loop(agent):
                 break
 
             #print(f"{APP_NAME}: ", end="", flush=True)
+
+            start_time = time.time()
             
             for message_chunk, metadata in agent.stream(
                 {"messages": [{"role": "user", "content": user_input}]},
@@ -48,6 +51,8 @@ def qa_loop(agent):
             ):
                 if isinstance(message_chunk, AIMessageChunk):
                     print(message_chunk.content, end="", flush=True)
+            end_time = time.time()
+            logger.info(f"Response time: {(end_time - start_time)*1000:.0f} ms")
             
         except (KeyboardInterrupt, EOFError):
             print("\nExiting.")
@@ -83,7 +88,7 @@ def main():
         model=model,
         name=APP_NAME,
         prompt=f"You are a helpful football assistant. Today is {datetime.today().strftime('%Y-%m-%d')}. If the user query does not specify a season, assume it is 2024 for European leagues and 2025 for cups. If the user does not specify a league, assume it is the national league for the teams in the query. If any tool fails, figure out the correct parameters (e.g. for team name, 'FCP' should be 'FC Porto') and try again.",
-        tools=get_all_tools(),
+        tools=[],
     )
 
     # Run it

@@ -1,6 +1,7 @@
 from .get_standings_tool import GetStandingsTool
+from langchain_core.tools import StructuredTool
 
-def get_all_tools():
+def get_all_tools() -> list[StructuredTool]:
     """
     Get all available tools as a list of LangChain StructuredTool instances.
     
