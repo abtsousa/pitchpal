@@ -22,8 +22,8 @@ import time
 APP_NAME = "Tonibot"
 
 # Logging
-logging.basicConfig(level=logging.INFO)
 logger = logging.getLogger(__name__)
+logger.setLevel(logging.INFO)
 
 # Phoenix tracing
 def start_phoenix(phoenix_endpoint : str):
