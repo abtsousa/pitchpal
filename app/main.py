@@ -12,6 +12,7 @@ from langchain_openai import ChatOpenAI
 from langgraph.prebuilt import create_react_agent
 from langchain_core.messages import AIMessageChunk
 from tools import get_all_tools
+from agent import get_agent
 
 import getpass
 import os
@@ -56,6 +57,7 @@ def qa_loop(agent):
                 if isinstance(message_chunk, AIMessageChunk):
                     print(message_chunk.content, end="", flush=True)
             end_time = time.time()
+            print()  # New line after the response
             logger.info(f"Response time: {(end_time - start_time)*1000:.0f} ms")
             
         except (KeyboardInterrupt, EOFError):
@@ -104,12 +106,12 @@ def main():
 
     model = ChatOpenAI(model="gpt-4.1-mini-2025-04-14")
 
-    # TODO switch to our custom agent, this is just to get an input-output loop going
-    agent = create_react_agent(
+    # Use our custom agent
+    agent = get_agent(
         model=model,
-        name=APP_NAME,
-        prompt=f"You are a helpful football assistant. Today is {datetime.today().strftime('%Y-%m-%d')}. If the user query does not specify a season, assume it is 2024 for European leagues and 2025 for cups. If the user does not specify a league, assume it is the national league for the teams in the query. If any tool fails, figure out the correct parameters (e.g. for team name, 'FCP' should be 'FC Porto') and try again.",
         tools=get_all_tools(),
+        name=APP_NAME,
+        prompt=f"You are a helpful football assistant. Today is {datetime.today().strftime('%Y-%m-%d')}. Club World Cup is ongoing, but all the other European events have finished. If the user query does not specify a season, assume it is the latest (2024/25 for European leagues and 2025 for cups). If the user does not specify a league, assume it is the national league for the teams in the query. If any tool fails, figure out the correct parameters (e.g. for team name, 'FCP' should be 'FC Porto') and try again.",
     )
 
     # Run it
