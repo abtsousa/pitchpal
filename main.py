@@ -5,6 +5,7 @@
 # Import tools
 # Test it out
 
+from phoenix.otel import register
 from datetime import datetime
 from langchain_google_genai import ChatGoogleGenerativeAI
 from langgraph.prebuilt import create_react_agent
@@ -12,9 +13,18 @@ from langchain_core.messages import AIMessageChunk
 
 import getpass
 import os
+import argparse
+
 # Global variables
 APP_NAME = "Tonibot"
 
+def start_phoenix(phoenix_endpoint : str):
+    # configure the Phoenix tracer
+    tracer_provider = register(
+    project_name="default",
+    auto_instrument=True,
+    endpoint=phoenix_endpoint,
+    )
 
 # QA loop
 def qa_loop(agent):
@@ -38,6 +48,16 @@ def qa_loop(agent):
             break
 
 def main():
+    parser = argparse.ArgumentParser(description=APP_NAME)
+    parser.add_argument(
+        "--phoenix-endpoint", 
+        help="Phoenix endpoint URL (optional)"
+    )
+    args = parser.parse_args()
+    
+    if args.phoenix_endpoint:
+        start_phoenix(args.phoenix_endpoint)
+    
     if not os.environ.get("GOOGLE_API_KEY"):
         os.environ["GOOGLE_API_KEY"] = getpass.getpass("Enter API key for Google Gemini: ")
 
