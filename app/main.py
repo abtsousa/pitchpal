@@ -8,7 +8,7 @@
 from phoenix.otel import register
 from datetime import datetime
 from langgraph.prebuilt import create_react_agent
-from langchain_core.messages import AIMessageChunk
+from langchain_core.messages import AIMessageChunk, AIMessage
 from tools import get_all_tools
 from agent import get_agent, create_agent_config
 from termcolor import colored, cprint
@@ -54,7 +54,7 @@ def qa_loop(agent, config):
                 config=config,
                 stream_mode=["messages", "custom"],
             ):
-                if mode == "messages" and isinstance(chunk[0], AIMessageChunk):
+                if mode == "messages" and isinstance(chunk[0], (AIMessageChunk, AIMessage)):
                     cprint(chunk[0].content, color="light_grey", attrs=["dark"], end="", flush=True)
                 elif mode == "custom":
                     cprint(chunk, color="green", end="", flush=True)
@@ -85,8 +85,8 @@ def main():
     parser.add_argument(
         "--model",
         choices=["google", "openai"],
-        default="google",
-        help="Choose the model to use (default: google)"
+        default="openai",
+        help="Choose the model to use (default: openai)"
     )
     args = parser.parse_args()
     

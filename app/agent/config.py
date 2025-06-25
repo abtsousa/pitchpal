@@ -13,7 +13,7 @@ DEFAULT_FOOTBALL_PROMPT = (
     "parameters (e.g. for team name, 'FCP' should be 'FC Porto') and try again."
 )
 
-def create_agent_config(model_name: Literal["google", "openai"] = "google", 
+def create_agent_config(model_name: Literal["google", "openai"] = "openai", 
                        app_name: str = "Tonibot",
                        custom_prompt: str | None = None) -> dict:
     """
@@ -38,6 +38,6 @@ def create_agent_config(model_name: Literal["google", "openai"] = "google",
     return {
         "configurable": {
             "model_name": model_name,
-            "prompt": prompt
+            "system_prompt": prompt
         }
     }
