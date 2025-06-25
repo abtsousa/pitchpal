@@ -9,6 +9,7 @@ from urllib.parse import urljoin
 from typing import Literal, Any, Optional
 from pydantic import BaseModel
 from dotenv import load_dotenv, find_dotenv
+import unicodedata
 
 # Set up logging
 logger = logging.getLogger(__name__)
@@ -101,6 +102,16 @@ def call_football_api(method: Literal["GET", "OPTIONS", "HEAD", "POST", "PUT", "
         'x-rapidapi-key': FOOTBALL_API_KEY,
         'x-rapidapi-host': FOOTBALL_API_HOST
     }
+    
+    # Normalize param values - replace accented characters with ASCII equivalents
+    if params:
+        normalized_params = {}
+        for k, v in params.items():
+            # Convert to string and normalize to ASCII
+            normalized_value = unicodedata.normalize('NFD', str(v))
+            normalized_value = ''.join(c for c in normalized_value if unicodedata.category(c) != 'Mn')
+            normalized_params[k] = normalized_value
+        params = normalized_params
     
     try:
         response = requests.request(method, url, headers=headers, data=data, params=params)
