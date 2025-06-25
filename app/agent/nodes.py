@@ -1,6 +1,6 @@
 from getpass import getpass
 import os
-from typing import Literal, TypedDict
+from typing import Literal, TypedDict, cast
 from langchain_core.tools import StructuredTool
 from langchain_core.language_models.chat_models import BaseChatModel
 from langchain_core.runnables import Runnable
@@ -8,7 +8,8 @@ from langchain_core.messages import BaseMessage
 from langchain_core.language_models.base import LanguageModelInput
 from pydantic import BaseModel, Field
 from agent.state import State
-from langchain_core.messages import SystemMessage
+from agent.prompts import SPORTS_GUARDRAIL_PROMPT, get_system_prompt
+from langchain_core.messages import SystemMessage, HumanMessage
 from tools import get_all_tools
 from langgraph.prebuilt import ToolNode
 
@@ -38,15 +39,15 @@ def _bind_model(model: BaseChatModel) -> Runnable[LanguageModelInput, BaseMessag
     return model.bind_tools(_get_tools())
 
 ### NODES ###
-
 # Call model node
 def call_model(state: State, config) -> dict[str, list[BaseMessage]]:
     messages = state["messages"]
     model_name = config.get('configurable', {}).get("model_name", "openai")
-    system_prompt = config.get('configurable', {}).get("system_prompt", None)
+    app_name = config.get('configurable', {}).get("app_name", "Tonibot")
     
-    # Add system prompt if provided
-    if system_prompt and (not messages or messages[0].type != "system"):
+    # Add system prompt if not already present
+    if not messages or messages[0].type != "system":
+        system_prompt = get_system_prompt(app_name)
         system_message: BaseMessage = SystemMessage(content=system_prompt)
         messages = [system_message] + list(messages)
     
@@ -60,27 +61,56 @@ def call_model(state: State, config) -> dict[str, list[BaseMessage]]:
 tool_node = ToolNode(tools=_get_tools())
 
 # Guardrail node
-class AboutSportsGuardrailNode(TypedDict):
-    """Is the user's question about sports?"""
-    about_sports: bool
-
 class AboutSportsGuardrailSchema(BaseModel):
-    """Is the user's question about sports?"""
-    about_sports: bool = Field(description="Whether the user's question is about sports")
+    """Classification of whether the query is genuinely about sports"""
+    about_sports: bool = Field(description="Whether the query is genuinely about sports")
+    confidence: float = Field(description="Confidence score between 0.0 and 1.0", ge=0.0, le=1.0)
+    reasoning: str = Field(description="Brief explanation of the classification")
 
-about_sports_prompt = "Determine whether the user's most recent question is about sports."
 
-def sports_guardrail(state: State, config) -> AboutSportsGuardrailNode:
+def sports_guardrail(state: State, config) -> dict:
     """
     Check if the user's question is about sports.
     """
-    messages = state["messages"]
+    last_message = state["messages"][-1] if state["messages"] else None
+    if isinstance(last_message, HumanMessage):
+        if not last_message.content:
+            return {"about_sports": False, "reasoning": "Empty query"}
+    else:
+        return {"about_sports": False, "reasoning": "Last message is not a user query"}
+    
     model_name = config.get('configurable', {}).get("model_name", "openai")
-    messages = [about_sports_prompt] + list(messages)
+
+    # Create the message with proper content
+    messages = [SPORTS_GUARDRAIL_PROMPT, last_message]
     
     model = _get_model(model_name).with_structured_output(
         AboutSportsGuardrailSchema
     )
-    response = model.invoke(messages)
-    
-    return {"about_sports": response.about_sports} # type: ignore
+
+    try:
+        response = model.invoke(messages)
+        response = cast(AboutSportsGuardrailSchema, response)
+        
+        # Apply confidence threshold for additional safety
+        # If confidence is low and the model says it's about sports, be conservative
+        if response.about_sports and response.confidence < 0.6:
+            return {
+                "about_sports": False,
+                "guardrail_confidence": response.confidence,
+                "guardrail_reasoning": f"Low confidence ({response.confidence}): {response.reasoning}"
+            }
+        
+        return {
+            "about_sports": response.about_sports,
+            "guardrail_confidence": response.confidence,
+            "guardrail_reasoning": response.reasoning
+        }
+        
+    except Exception as e:
+        # Fail closed - assume not about sports if classification fails
+        return {
+            "about_sports": False,
+            "guardrail_confidence": 0.0,
+            "guardrail_reasoning": f"Classification error: {str(e)}"
+        }

@@ -7,6 +7,7 @@ from langchain_google_genai import ChatGoogleGenerativeAI
 from langchain_openai import ChatOpenAI
 from agent.nodes import call_model, sports_guardrail, tool_node
 from agent.state import State
+from agent.prompts import get_non_sports_response
 from langchain_core.messages import AIMessage
 
 def is_about_sports(state: State) -> Literal["hardcoded_response", "agent"]:
@@ -14,13 +15,10 @@ def is_about_sports(state: State) -> Literal["hardcoded_response", "agent"]:
         return "hardcoded_response"
     return "agent"
 
-def hardcoded_response(state: State):
+def hardcoded_response(state: State, app_name: str):
     return {
         "messages": [
-            AIMessage(
-            "I am not able to answer that. "
-            "Please ask me something else."
-            )
+            AIMessage(get_non_sports_response(app_name))
         ]
     }
 
@@ -31,19 +29,21 @@ def get_agent():
    
     class GraphConfig(TypedDict):
         model_name: Literal["google", "openai"]
-        system_prompt: str | None
+        app_name: str
 
     graph = StateGraph(State, config_schema=GraphConfig)
     
     # Add nodes
     graph.add_node("agent", call_model)
     graph.add_node("tools", tool_node)
-    graph.add_node(sports_guardrail)
-    graph.add_node(hardcoded_response)
-    
+    graph.add_node("sports_guardrail", sports_guardrail)
+    graph.add_node("hardcoded_response", lambda state, config: hardcoded_response(state, app_name=config.get("app_name", "Tonibot")))
     # Add edges
     graph.add_edge(START, "sports_guardrail")
-    graph.add_conditional_edges("sports_guardrail", is_about_sports)
+    graph.add_conditional_edges("sports_guardrail", is_about_sports, {
+        "hardcoded_response": "hardcoded_response",
+        "agent": "agent"
+    })
     graph.add_conditional_edges("agent", tools_condition)
     graph.add_edge("tools", "agent")
     graph.add_edge("hardcoded_response", END)

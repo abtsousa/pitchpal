@@ -110,8 +110,8 @@ def main():
     
     # Create configuration
     config = create_agent_config(
-        model_name=args.model,
-        app_name=APP_NAME
+        app_name=APP_NAME,
+        model_name=args.model
     )
 
     # Run it
