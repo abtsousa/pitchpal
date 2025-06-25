@@ -7,6 +7,7 @@ import logging
 from typing import Optional, Any
 from pydantic import BaseModel, Field
 from langchain_core.tools import StructuredTool
+from langgraph.config import get_stream_writer
 
 from utils.football_api_utils import (
     call_football_api, Response, ValidResponse, ErrorResponse
@@ -52,9 +53,11 @@ class GetStandingsTool:
                 return ErrorResponse(error=f"Team '{team_name}' not found")
             params["team"] = team_id
         
-        logger.info(f"Fetching standings for {league_name} (ID: {league_id}) season {season}")
-        if team_name:
-            logger.info(f"Filtering for team: {team_name}")
+        writer = get_stream_writer()
+        if not team_name:
+            writer(f"Fetching standings for {league_name} season {season}...\n")
+        else:
+            writer(f"Fetching standings for team {team_name} in {league_name} season {season}...\n")
         
         # Make the API call
         try:
