@@ -1,2 +1,5 @@
-- Finish 02_chatbot
-- Have a fallback mechanism for teams who have multiple names (e.g. Paris Saint-Germain, PSG, Paris SG) — maybe let the chatbot use the list_teams tool to get the correct name?
+- Prompt injection guardrails
+- Other sport detection
+>> Basket, Rugby, F1 - coming soon
+>> Other - not available
+

@@ -7,12 +7,10 @@
 
 from phoenix.otel import register
 from datetime import datetime
-from langchain_google_genai import ChatGoogleGenerativeAI
-from langchain_openai import ChatOpenAI
 from langgraph.prebuilt import create_react_agent
 from langchain_core.messages import AIMessageChunk
 from tools import get_all_tools
-from agent import get_agent
+from agent import get_agent, create_agent_config
 from termcolor import colored, cprint
 
 import getpass
@@ -40,7 +38,7 @@ def start_phoenix(phoenix_endpoint : str):
     logging.getLogger("openinference").setLevel(logging.CRITICAL)
 
 # QA loop
-def qa_loop(agent):
+def qa_loop(agent, config):
     while True:
         try:
             user_input = input("> ").strip()
@@ -53,6 +51,7 @@ def qa_loop(agent):
             
             for mode, chunk in agent.stream(
                 {"messages": [{"role": "user", "content": user_input}]},
+                config=config,
                 stream_mode=["messages", "custom"],
             ):
                 if mode == "messages" and isinstance(chunk[0], AIMessageChunk):
@@ -83,6 +82,12 @@ def main():
         action="store_true",
         help="Enable logging (critical level if off, info/debug if on)"
     )
+    parser.add_argument(
+        "--model",
+        choices=["google", "openai"],
+        default="google",
+        help="Choose the model to use (default: google)"
+    )
     args = parser.parse_args()
     
     # Set logging level based on arguments
@@ -97,28 +102,20 @@ def main():
     if args.phoenix_endpoint:
         start_phoenix(args.phoenix_endpoint)
     
-    if not os.environ.get("GOOGLE_API_KEY"):
-        os.environ["GOOGLE_API_KEY"] = getpass.getpass("Enter API key for Google Gemini: ")
+    
 
-    model = ChatGoogleGenerativeAI(model="gemini-2.0-flash")
-
-    """
-    if not os.environ.get("OPENAI_API_KEY"):
-        os.environ["OPENAI_API_KEY"] = getpass.getpass("Enter API key for OpenAI: ")
-
-    model = ChatOpenAI(model="gpt-4.1-mini-2025-04-14", stream_usage=True)
-    """
 
     # Use our custom agent
-    agent = get_agent(
-        model=model,
-        tools=get_all_tools(),
-        name=APP_NAME,
-        prompt=f"You are {APP_NAME}, a helpful football assistant. Today is {datetime.today().strftime('%Y-%m-%d')}. Club World Cup is ongoing, but all the other European events have finished. If the user query does not specify a season, assume it is the latest (2024/25 for European leagues and 2025 for cups). If the user does not specify a league, assume it is the national league for the teams in the query. If any tool fails, figure out the correct parameters (e.g. for team name, 'FCP' should be 'FC Porto') and try again.",
+    agent = get_agent()
+    
+    # Create configuration
+    config = create_agent_config(
+        model_name=args.model,
+        app_name=APP_NAME
     )
 
     # Run it
-    qa_loop(agent)
+    qa_loop(agent, config)
 
 
 
