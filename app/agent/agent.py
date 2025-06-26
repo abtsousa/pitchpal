@@ -25,6 +25,9 @@ def triage_action(state: State) -> Literal["hardcoded_response", "agent", "futur
         future_sports = [s for s in sports_mentioned if s in ["basketball", "rugby", "F1"]]
         if future_sports and not ("other_sport" in sports_mentioned):
             return "future_sports_response"
+        # If no sports are mentioned, call agent to handle it
+        if not future_sports and not ("other_sport" in sports_mentioned):
+            return "agent"
         # If other sports
         return "unsupported_sports_response"
     

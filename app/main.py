@@ -59,10 +59,10 @@ def qa_loop(agent, config, show_classification=False):
                     metadata = chunk[1] if len(chunk) > 1 else {}
                     node_name = metadata.get('langgraph_node', '')
                     
-                    # Handle classification nodes differently
-                    if node_name in ['sports_guardrail', 'sports_classifier'] and show_classification:
-                        # Check if this chunk has content and response_metadata (indicating completion)
-                        cprint(chunk[0].content, color="yellow", attrs=["dark"], end="", flush=True)
+                    # Show classification nodes in yellow if requested
+                    if node_name in ['sports_guardrail', 'sports_classifier']:
+                        if show_classification:
+                            cprint(chunk[0].content, color="yellow", end="", flush=True)
                     else:
                         # Show all other nodes in light grey
                         cprint(chunk[0].content, color="light_grey", attrs=["dark"], end="", flush=True)

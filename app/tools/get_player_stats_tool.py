@@ -20,7 +20,7 @@ class GetPlayerStatsTool:
     """Tool for retrieving player statistics."""
     
     @staticmethod
-    def get_player_stats(
+    def get_specific_player_stats(
         player_name: str,
         team_name: str | None = None,
         league_name: str | None = None,
@@ -96,7 +96,7 @@ class GetPlayerStatsTool:
         Format the player statistics response into a readable string.
         
         Args:
-            stats_response: Response from get_player_stats function
+            stats_response: Response from get_specific_player_stats function
             
         Returns:
             Formatted string with player statistics
@@ -279,7 +279,7 @@ class GetPlayerStatsTool:
         return result
     
     @staticmethod
-    def get_player_stats_formatted(
+    def get_specific_player_stats_formatted(
         player_name: str,
         team_name: str | None = None,
         league_name: str | None = None,
@@ -301,7 +301,7 @@ class GetPlayerStatsTool:
             Compact formatted string with player statistics or error message
         """
         # Get the raw stats
-        stats_response = GetPlayerStatsTool.get_player_stats(player_name, team_name, league_name, season, page)
+        stats_response = GetPlayerStatsTool.get_specific_player_stats(player_name, team_name, league_name, season, page)
         
         # Format and return using compact format (much less verbose than raw JSON)
         return GetPlayerStatsTool.format_player_stats(stats_response)
@@ -321,8 +321,8 @@ class GetPlayerStatsTool:
             page: int = Field(1, description="Page number for pagination (default 1)")
 
         return StructuredTool.from_function(
-            self.get_player_stats_formatted,
-            name="get_player_stats",
+            self.get_specific_player_stats_formatted,
+            name="get_specific_player_stats",
             description="Returns comprehensive stats for a player in a specified team (club or national team) or league: games, goals, assists, shots, passes, tackles, cards, penalties, fouls, and dribbles.",
             args_schema=GetPlayerStatsInput,
             return_direct=False

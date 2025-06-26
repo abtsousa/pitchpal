@@ -3,7 +3,7 @@ from .get_next_fixtures_tool import GetNextFixturesTool
 from .get_last_fixtures_tool import GetLastFixturesTool
 from .get_specific_fixture_tool import GetSpecificFixtureTool
 from .get_match_events_tool import GetMatchEventsTool
-from .get_player_stats_tool import GetPlayerStatsTool
+from .get_specific_player_stats_tool import GetPlayerStatsTool
 from .helper_tools import HelperTools
 from langchain_core.tools import StructuredTool
 

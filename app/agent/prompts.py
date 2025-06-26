@@ -68,9 +68,9 @@ CRITICAL INSTRUCTIONS:
 Classify sports into these categories:
 - "soccer": Football/soccer including:
   * Competitions: FIFA World Cup, Club World Cup, Primeira Liga, Premier League, La Liga, Serie A, Bundesliga, Champions League, Europa League, etc.
-  * Teams: Any football club or national team (e.g., Borussia Dortmund, Real Madrid, Manchester United, etc.)
-  * Terms: fixtures, matches, games, goals, transfers, players, standings, table, etc.
-  * Players: Messi, Ronaldo, Haaland, Mbappé, etc
+  * Teams: Any football club or national team with full names or abbreviations (e.g., Borussia Dortmund, Real Madrid, Manchester United, Sporting CP, SLB, FCP, FCB, PSG, etc.)
+  * Terms: fixtures, matches, games, goals, transfers, players, standings, table, events, cards, substitutions, etc.
+  * Players: Messi, Ronaldo, Haaland, Mbappé, etc.
 - "basketball": Basketball (NBA, FIBA, LeBron James, etc.)
 - "rugby": Rugby union or rugby league
 - "F1": Formula 1 racing, Max Verstappen, Lewis Hamilton, etc.
