@@ -45,7 +45,7 @@ class GetMatchEventsTool:
             ValidResponse with events data or ErrorResponse with error details
         """
         # Prepare parameters for the API call
-        params: dict[str, int | str] = {
+        paramsy = {
             "fixture": fixture_id
         }
         
