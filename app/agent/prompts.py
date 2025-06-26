@@ -66,10 +66,14 @@ CRITICAL INSTRUCTIONS:
 - Focus ONLY on identifying the sports mentioned
 
 Classify sports into these categories:
-- "soccer": Football/soccer (FIFA World Cup, Premier League, La Liga, Messi, Ronaldo, etc.)
+- "soccer": Football/soccer including:
+  * Competitions: FIFA World Cup, Club World Cup, Primeira Liga, Premier League, La Liga, Serie A, Bundesliga, Champions League, Europa League, etc.
+  * Teams: Any football club or national team (e.g., Borussia Dortmund, Real Madrid, Manchester United, etc.)
+  * Terms: fixtures, matches, games, goals, transfers, players, standings, table, etc.
+  * Players: Messi, Ronaldo, Haaland, Mbappé, etc
 - "basketball": Basketball (NBA, FIBA, LeBron James, etc.)
 - "rugby": Rugby union or rugby league
-- "F1": Formula 1 racing
+- "F1": Formula 1 racing, Max Verstappen, Lewis Hamilton, etc.
 - "other_sport": Any other sport not listed above (tennis, golf, baseball, etc.)
 
 If no sports are mentioned, return an empty list."""
