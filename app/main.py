@@ -38,7 +38,7 @@ def start_phoenix(phoenix_endpoint : str):
     logging.getLogger("openinference").setLevel(logging.CRITICAL)
 
 # QA loop
-def qa_loop(agent, config):
+def qa_loop(agent, config, show_classification=False):
     while True:
         try:
             user_input = input("> ").strip()
@@ -55,7 +55,17 @@ def qa_loop(agent, config):
                 stream_mode=["messages", "custom"],
             ):
                 if mode == "messages" and isinstance(chunk[0], (AIMessageChunk, AIMessage)):
-                    cprint(chunk[0].content, color="light_grey", attrs=["dark"], end="", flush=True)
+                    # Filter out internal classification nodes, but allow response nodes
+                    metadata = chunk[1] if len(chunk) > 1 else {}
+                    node_name = metadata.get('langgraph_node', '')
+                    
+                    # Handle classification nodes differently
+                    if node_name in ['sports_guardrail', 'sports_classifier'] and show_classification:
+                        # Check if this chunk has content and response_metadata (indicating completion)
+                        cprint(chunk[0].content, color="yellow", attrs=["dark"], end="", flush=True)
+                    else:
+                        # Show all other nodes in light grey
+                        cprint(chunk[0].content, color="light_grey", attrs=["dark"], end="", flush=True)
                 elif mode == "custom":
                     cprint(chunk, color="green", end="", flush=True)
             end_time = time.time()
@@ -88,6 +98,11 @@ def main():
         default="openai",
         help="Choose the model to use (default: openai)"
     )
+    parser.add_argument(
+        "--show-classification",
+        action="store_true",
+        help="Show classification node outputs in yellow"
+    )
     args = parser.parse_args()
     
     # Set logging level based on arguments
@@ -115,7 +130,7 @@ def main():
     )
 
     # Run it
-    qa_loop(agent, config)
+    qa_loop(agent, config, show_classification=args.show_classification)
 
 
 
