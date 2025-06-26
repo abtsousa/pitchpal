@@ -20,17 +20,17 @@ def determine_sports_action(state: State) -> Literal["agent", "future_sports_res
     """Determine what to do based on the specific sports mentioned"""
     sports_mentioned = state.get("sports_mentioned", [])
     
-    # If soccer is mentioned, proceed to agent (regardless of other sports)
-    if "soccer" in sports_mentioned:
-        return "agent"
+    # If soccer is NOT mentioned, use existing behavior
+    if "soccer" not in sports_mentioned:
+        # If only future sports are mentioned
+        future_sports = [s for s in sports_mentioned if s in ["basketball", "rugby", "F1"]]
+        if future_sports and not ("other_sport" in sports_mentioned):
+            return "future_sports_response"
+        # If other sports
+        return "unsupported_sports_response"
     
-    # If only future sports are mentioned
-    future_sports = [s for s in sports_mentioned if s in ["basketball", "rugby", "F1"]]
-    if future_sports and not ("other_sports" in sports_mentioned):
-        return "future_sports_response"
-    
-    # If other sports
-    return "unsupported_sports_response"
+    # If soccer IS mentioned, always proceed to agent
+    return "agent"
 
 def hardcoded_response(state: State, app_name: str):
     """Response for non-sports queries"""

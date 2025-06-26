@@ -1,3 +1,4 @@
+from typing import Sequence
 from datetime import datetime
 
 # Default system prompt for the football assistant
@@ -10,11 +11,6 @@ DEFAULT_FOOTBALL_PROMPT = (
     "If the user does not specify a league, assume it is the national league "
     "for the teams in the query. If any tool fails, figure out the correct "
     "parameters (e.g. for team name, 'FCP' should be 'FC Porto') and try again.\n\n"
-    "IMPORTANT: If the user asks about multiple sports, be aware of the following:\n"
-    "- You specialize in football (soccer) information\n"
-    "- Basketball, Rugby, and Formula 1 information will be added in the near future\n"
-    "- Other sports information is not available\n"
-    "If a user asks about soccer plus other sports, answer the soccer part and politely mention the availability status of the other sports."
 )
 
 # Default response for non-sports questions
@@ -140,3 +136,52 @@ def get_unsupported_sports_response(app_name: str, sports_list: list[str]) -> st
         sports_list=sports_text,
         sports_type=sports_type
     )
+
+def get_dynamic_system_prompt(app_name: str, sports_mentioned: Sequence[str] | None = None) -> str:
+    """
+    Get the formatted system prompt for the football assistant with dynamic sports information.
+    
+    Args:
+        app_name: Name of the application
+        sports_mentioned: List of sports mentioned in the query
+    
+    Returns:
+        Formatted system prompt with dynamic sports information
+    """
+    base_prompt = DEFAULT_FOOTBALL_PROMPT.format(
+        app_name=app_name,
+        date=datetime.today().strftime('%Y-%m-%d')
+    )
+    
+    if not sports_mentioned or "soccer" not in sports_mentioned:
+        return base_prompt
+    
+    # If soccer is mentioned with other sports, add specific instructions
+    other_sports = [s for s in sports_mentioned if s != "soccer"]
+    if other_sports:
+        future_sports = [s for s in other_sports if s in ["basketball", "rugby", "F1"]]
+        unsupported_sports = [s for s in other_sports if s == "other_sport"]
+        
+        additional_instruction = "\n\nADDITIONAL INSTRUCTION: When answering, also mention that "
+        
+        if future_sports:
+            # Map internal names to display names
+            sports_display_map = {
+                "basketball": "basketball",
+                "rugby": "rugby", 
+                "F1": "Formula 1"
+            }
+            display_names = [sports_display_map.get(sport, sport) for sport in future_sports]
+            sports_text = ", ".join(display_names)
+            additional_instruction += f"{sports_text} information will be available in the future"
+            
+            if unsupported_sports:
+                additional_instruction += " and other sports information is not available"
+        elif unsupported_sports:
+            additional_instruction += "other sports information is not available"
+        
+        additional_instruction += "."
+        
+        return base_prompt + additional_instruction
+    
+    return base_prompt

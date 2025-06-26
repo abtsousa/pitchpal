@@ -8,7 +8,7 @@ from langchain_core.messages import BaseMessage
 from langchain_core.language_models.base import LanguageModelInput
 from pydantic import BaseModel, Field
 from agent.state import State
-from agent.prompts import SPORTS_GUARDRAIL_PROMPT, SPORTS_CLASSIFIER_PROMPT, get_system_prompt
+from agent.prompts import SPORTS_GUARDRAIL_PROMPT, SPORTS_CLASSIFIER_PROMPT, get_system_prompt, get_dynamic_system_prompt
 from langchain_core.messages import SystemMessage, HumanMessage
 from tools import get_all_tools
 from langgraph.prebuilt import ToolNode
@@ -47,7 +47,9 @@ def call_model(state: State, config) -> dict[str, list[BaseMessage]]:
     
     # Add system prompt if not already present
     if not messages or messages[0].type != "system":
-        system_prompt = get_system_prompt(app_name)
+        # Use dynamic system prompt if sports are mentioned
+        sports_mentioned = state.get("sports_mentioned", [])
+        system_prompt = get_dynamic_system_prompt(app_name, sports_mentioned)
         system_message: BaseMessage = SystemMessage(content=system_prompt)
         messages = [system_message] + list(messages)
     
