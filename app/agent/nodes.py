@@ -43,7 +43,7 @@ def _bind_model(model: BaseChatModel) -> Runnable[LanguageModelInput, BaseMessag
 def call_model(state: State, config) -> dict[str, list[BaseMessage]]:
     messages = state["messages"]
     model_name = config.get('configurable', {}).get("model_name", "openai")
-    app_name = config.get('configurable', {}).get("app_name", "Tonibot")
+    app_name = config.get('configurable', {}).get("app_name", "PitchPal")
     
     # Add system prompt if not already present
     if not messages or messages[0].type != "system":

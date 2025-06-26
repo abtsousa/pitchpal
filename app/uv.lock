@@ -1082,7 +1082,7 @@ wheels = [
 ]
 
 [[package]]
-name = "tonibot"
+name = "pitchpal"
 version = "0.1.0"
 source = { virtual = "." }
 dependencies = [

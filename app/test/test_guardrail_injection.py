@@ -207,7 +207,7 @@ def main():
     # Initialize agent
     agent = get_agent()
     config = create_agent_config(
-        app_name="Tonibot",
+        app_name="PitchPal",
         model_name=args.model
     )
     

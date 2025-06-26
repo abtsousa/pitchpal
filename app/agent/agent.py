@@ -92,9 +92,9 @@ def get_agent():
     # Add nodes
     graph.add_node("sports_guardrail", sports_guardrail)
     graph.add_node("sports_classifier", sports_classifier)
-    graph.add_node("hardcoded_response", lambda state, config: hardcoded_response(state, app_name=config.get("app_name", "Tonibot")))
-    graph.add_node("future_sports_response", lambda state, config: future_sports_response(state, app_name=config.get("app_name", "Tonibot")))
-    graph.add_node("unsupported_sports_response", lambda state, config: unsupported_sports_response(state, app_name=config.get("app_name", "Tonibot")))
+    graph.add_node("hardcoded_response", lambda state, config: hardcoded_response(state, app_name=config.get("app_name", "PitchPal")))
+    graph.add_node("future_sports_response", lambda state, config: future_sports_response(state, app_name=config.get("app_name", "PitchPal")))
+    graph.add_node("unsupported_sports_response", lambda state, config: unsupported_sports_response(state, app_name=config.get("app_name", "PitchPal")))
     graph.add_node("triage", lambda state: state, defer=True) # Dummy no-op node for triage
     graph.add_node("agent", call_model)
     graph.add_node("tools", tool_node)

@@ -20,7 +20,7 @@ import argparse
 import time
 
 # Global variables
-APP_NAME = "Tonibot"
+APP_NAME = "PitchPal"
 
 # Logging
 logging.basicConfig(level=logging.INFO, 
