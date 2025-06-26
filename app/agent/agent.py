@@ -10,14 +10,13 @@ from agent.state import State
 from agent.prompts import get_non_sports_response, get_future_sports_response, get_unsupported_sports_response
 from langchain_core.messages import AIMessage
 
-def sports_guardrail_action(state: State) -> Literal["hardcoded_response", "triage"]:
-    """Route based on whether the query is about sports"""
-    if not state["about_sports"]:
+def triage_action(state: State) -> Literal["hardcoded_response", "agent", "future_sports_response", "unsupported_sports_response"]:
+    """Determine what to do based on whether it's about sports and which sports are mentioned"""
+    
+    # Check if it's not about sports first
+    if not state.get("about_sports", True):
         return "hardcoded_response"
-    return "triage"
-
-def sports_classifier_action(state: State) -> Literal["agent", "future_sports_response", "unsupported_sports_response"]:
-    """Determine what to do based on the specific sports mentioned"""
+    
     sports_mentioned = state.get("sports_mentioned", [])
     
     # If soccer is NOT mentioned, use existing behavior
@@ -93,16 +92,16 @@ def get_agent():
     graph.add_node("hardcoded_response", lambda state, config: hardcoded_response(state, app_name=config.get("app_name", "Tonibot")))
     graph.add_node("future_sports_response", lambda state, config: future_sports_response(state, app_name=config.get("app_name", "Tonibot")))
     graph.add_node("unsupported_sports_response", lambda state, config: unsupported_sports_response(state, app_name=config.get("app_name", "Tonibot")))
-    graph.add_node("triage", lambda state: state, defer=True) # No-op
+    graph.add_node("triage", lambda state: state, defer=True) # Dummy no-op node for triage
     graph.add_node("agent", call_model)
     graph.add_node("tools", tool_node)
     
     # Add edges
     graph.add_edge(START, "sports_guardrail")
     graph.add_edge(START, "sports_classifier")
-    graph.add_conditional_edges("sports_guardrail", sports_guardrail_action)
+    graph.add_edge("sports_guardrail", "triage")
     graph.add_edge("sports_classifier", "triage")
-    graph.add_conditional_edges("triage", sports_classifier_action)
+    graph.add_conditional_edges("triage", triage_action)
     graph.add_conditional_edges("agent", tools_condition)
     graph.add_edge("tools", "agent")
     graph.add_edge("hardcoded_response", END)
