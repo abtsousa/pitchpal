@@ -16,9 +16,6 @@ from agent import get_agent, create_agent_config
 from langchain_core.messages import HumanMessage
 from phoenix.otel import register
 
-# Add the current directory to the path so we can import the agent
-sys.path.append(os.path.dirname(os.path.abspath(__file__)))
-
 # Global variables
 APP_NAME = "GuardrailTester"
 

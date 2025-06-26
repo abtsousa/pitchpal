@@ -8,26 +8,26 @@ from langchain_core.messages import BaseMessage
 from langchain_core.language_models.base import LanguageModelInput
 from pydantic import BaseModel, Field
 from agent.state import State
-from agent.prompts import SPORTS_GUARDRAIL_PROMPT, get_system_prompt
+from agent.prompts import SPORTS_GUARDRAIL_PROMPT, SPORTS_CLASSIFIER_PROMPT, get_system_prompt
 from langchain_core.messages import SystemMessage, HumanMessage
 from tools import get_all_tools
 from langgraph.prebuilt import ToolNode
 
 ### Helper functions ###
 
-def _get_model(model_name: Literal["google", "openai"]) -> BaseChatModel:
+def _get_model(model_name: Literal["google", "openai"], nano_model: bool = False) -> BaseChatModel:
     if model_name == "google":
         from langchain_google_genai import ChatGoogleGenerativeAI
         if not os.environ.get("GOOGLE_API_KEY"):
             os.environ["GOOGLE_API_KEY"] = getpass("Enter API key for Google Gemini: ")
         
-        return ChatGoogleGenerativeAI(model="gemini-2.0-flash")
+        return ChatGoogleGenerativeAI(model="gemini-2.5-flash") if not nano_model else ChatGoogleGenerativeAI(model="gemini-2.5-flash-lite-preview-06-17")
     elif model_name == "openai":
         from langchain_openai import ChatOpenAI
         if not os.environ.get("OPENAI_API_KEY"):
             os.environ["OPENAI_API_KEY"] = getpass("Enter API key for OpenAI: ")
 
-        return ChatOpenAI(model="gpt-4.1-mini-2025-04-14", stream_usage=True)
+        return ChatOpenAI(model="gpt-4.1-mini-2025-04-14", stream_usage=True) if not nano_model else ChatOpenAI(model="gpt-4.1-nano-2025-04-14", stream_usage=True)
     else:
         raise ValueError(f"Unsupported model: {model_name}")
 
@@ -66,6 +66,13 @@ class AboutSportsGuardrailSchema(BaseModel):
     about_sports: bool = Field(description="Whether the query is genuinely about sports")
     confidence: float = Field(description="Confidence score between 0.0 and 1.0", ge=0.0, le=1.0)
     reasoning: str = Field(description="Brief explanation of the classification")
+
+
+class SportsClassifierSchema(BaseModel):
+    """Classification of which specific sports are mentioned in the query"""
+    sports_mentioned: list[Literal["soccer", "basketball", "rugby", "F1", "other"]] = Field(
+        description="List of sports mentioned in the query"
+    )
 
 
 def sports_guardrail(state: State, config) -> dict:
@@ -113,4 +120,38 @@ def sports_guardrail(state: State, config) -> dict:
             "about_sports": False,
             "guardrail_confidence": 0.0,
             "guardrail_reasoning": f"Classification error: {str(e)}"
+        }
+
+def sports_classifier(state: State, config) -> dict:
+    """
+    Classify which specific sports are mentioned in the user's question.
+    """
+    last_message = state["messages"][-1] if state["messages"] else None
+    if isinstance(last_message, HumanMessage):
+        if not last_message.content:
+            return {"sports_mentioned": []}
+    else:
+        return {"sports_mentioned": []}
+    
+    model_name = config.get('configurable', {}).get("model_name", "openai")
+
+    # Create the message with proper content
+    messages = [SPORTS_CLASSIFIER_PROMPT, last_message]
+    
+    model = _get_model(model_name, nano_model=True).with_structured_output(
+        SportsClassifierSchema
+    )
+
+    try:
+        response = model.invoke(messages)
+        response = cast(SportsClassifierSchema, response)
+        
+        return {
+            "sports_mentioned": response.sports_mentioned,
+        }
+        
+    except Exception as e:
+        # Fail closed - assume offtopic if classification fails
+        return {
+            "sports_mentioned": [],
         }
