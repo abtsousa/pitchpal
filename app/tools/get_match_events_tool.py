@@ -11,7 +11,7 @@ from langgraph.config import get_stream_writer
 from utils.football_api_utils import (
     call_football_api, Response, ValidResponse, ErrorResponse
 )
-from utils.getters import get_league_id_by_name, get_team_id_by_name
+from utils.getters import get_team_id_by_name
 
 logger = logging.getLogger(__name__)
 
@@ -45,7 +45,7 @@ class GetMatchEventsTool:
             ValidResponse with events data or ErrorResponse with error details
         """
         # Prepare parameters for the API call
-        params = {
+        params: dict[str, int | str] = {
             "fixture": fixture_id
         }
         

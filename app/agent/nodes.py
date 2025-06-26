@@ -1,6 +1,6 @@
 from getpass import getpass
 import os
-from typing import Literal, TypedDict, cast
+from typing import Literal, cast
 from langchain_core.tools import StructuredTool
 from langchain_core.language_models.chat_models import BaseChatModel
 from langchain_core.runnables import Runnable
@@ -8,9 +8,8 @@ from langchain_core.messages import BaseMessage
 from langchain_core.language_models.base import LanguageModelInput
 from pydantic import BaseModel, Field
 from agent.state import State
-from agent.prompts import SPORTS_GUARDRAIL_PROMPT, SPORTS_CLASSIFIER_PROMPT, get_system_prompt, get_dynamic_system_prompt
+from agent.prompts import SPORTS_GUARDRAIL_PROMPT, SPORTS_CLASSIFIER_PROMPT, get_dynamic_system_prompt
 from langchain_core.messages import SystemMessage, HumanMessage
-from tools import get_all_tools
 from langgraph.prebuilt import ToolNode
 
 ### Helper functions ###

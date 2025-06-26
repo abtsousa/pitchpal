@@ -8,7 +8,6 @@ import os
 import sys
 import argparse
 import logging
-from datetime import datetime
 
 # Add the parent directory to the path so we can import the agent module
 sys.path.append(os.path.dirname(os.path.dirname(os.path.abspath(__file__))))

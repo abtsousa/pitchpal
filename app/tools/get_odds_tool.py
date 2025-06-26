@@ -21,14 +21,14 @@ class GetOddsTool:
     
     @staticmethod
     def get_odds(
-        fixture_id: Optional[int] = None,
-        league_name: Optional[str] = None,
-        season: Optional[int] = None,
-        date: Optional[str] = None,
-        timezone: Optional[str] = None,
+        fixture_id: int | None = None,
+        league_name: str | None = None,
+        season: int | None = None,
+        date: str | None = None,
+        timezone: str | None = None,
         page: int = 1,
-        bookmaker_id: Optional[int] = None,
-        bet_id: Optional[int] = None
+        bookmaker_id: int | None = None,
+        bet_id: int | None = None
     ) -> Response:
         """
         Get odds for a fixture, league, or other parameters.

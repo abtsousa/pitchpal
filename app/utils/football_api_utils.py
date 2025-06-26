@@ -2,6 +2,7 @@
 Football API utility functions for making API calls and handling responses.
 """
 
+from getpass import getpass
 import os
 import requests
 import logging
@@ -17,6 +18,8 @@ logger = logging.getLogger(__name__)
 # Load environment variables
 load_dotenv(find_dotenv())
 FOOTBALL_API_KEY = os.getenv('FOOTBALL_API_KEY')
+if not FOOTBALL_API_KEY:
+    getpass("Enter API key for Football API: ")
 FOOTBALL_API_BASE_URL = "https://v3.football.api-sports.io/"
 FOOTBALL_API_HOST = "v3.football.api-sports.io"
 

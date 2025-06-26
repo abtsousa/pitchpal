@@ -3,7 +3,6 @@ Top scorers tool for retrieving top goal scorers in a league.
 """
 
 import logging
-from typing import Optional
 from pydantic import BaseModel, Field
 from langchain_core.tools import StructuredTool
 from langgraph.config import get_stream_writer

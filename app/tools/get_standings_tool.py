@@ -2,9 +2,8 @@
 Standings tool for retrieving league standings data.
 """
 
-import json
 import logging
-from typing import Optional, Any
+from typing import Optional
 from pydantic import BaseModel, Field
 from langchain_core.tools import StructuredTool
 from langgraph.config import get_stream_writer

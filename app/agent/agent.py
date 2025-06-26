@@ -1,10 +1,7 @@
-from typing import Annotated, Literal
+from typing import Literal
 from typing_extensions import TypedDict
 from langgraph.graph import StateGraph, START, END
-from langgraph.graph.message import add_messages
-from langgraph.prebuilt import ToolNode, tools_condition
-from langchain_google_genai import ChatGoogleGenerativeAI
-from langchain_openai import ChatOpenAI
+from langgraph.prebuilt import tools_condition
 from agent.nodes import call_model, sports_guardrail, sports_classifier, tool_node
 from agent.state import State
 from agent.prompts import get_non_sports_response, get_future_sports_response, get_unsupported_sports_response
