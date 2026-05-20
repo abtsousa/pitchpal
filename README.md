@@ -1,6 +1,6 @@
 # PitchPal
 
-PitchPal is an interactive command-line assistant for football (soccer) data, powered by LLMs and LangGraph. It supports streaming responses, classification, and integrates with various football data tools.
+PitchPal is an interactive command-line AI assistant for football (soccer) data, powered by LLMs and LangGraph. It supports streaming responses, classification, and integrates with various football data tools.
 
 ## Features
 - Interactive QA loop for football-related queries
